@@ -20,7 +20,7 @@ OSGB_convert <- function(
   return(df)
 }
 
-# Download diffuser tube data from http://62.65.40.208/
+# Download diffusion tube data from http://62.65.40.208/
 get_dtube_data <- function(
     redownload = FALSE
 ) {
@@ -55,7 +55,14 @@ get_dtube_data <- function(
     
     # Combine and save
     diffusion_data <- data.table::rbindlist(data_list) %>%
-      arrange(Tube_ID)
+      arrange(Tube_ID) %>%
+      mutate(
+        Tube_ID = case_when(
+          str_detect(Tube_ID, "^[A-Z]{3}\\d$") ~ 
+            str_replace(Tube_ID, "^(\\w{3})(\\d)$", "\\10\\2"),  
+          TRUE ~ Tube_ID
+          )
+      )
     
     # Convert coordinates to long and lat
     diffusion_data <- OSGB_convert(diffusion_data)

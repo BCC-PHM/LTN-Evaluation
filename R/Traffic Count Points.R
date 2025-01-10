@@ -1,5 +1,6 @@
 library("BSol.mapR")
 library(dplyr)
+library(stringr)
 
 # load point data
 points_data <- load_data(
