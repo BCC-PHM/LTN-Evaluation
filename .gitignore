@@ -20,3 +20,6 @@
 *.csv
 *.pdf
 *.svg
+
+# Ignore config files
+*config*
