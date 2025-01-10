@@ -3,12 +3,12 @@ library(dplyr)
 
 # load point data
 points_data <- load_data(
-  "Data/TrafficPoints.csv") %>%
+  "../data/TrafficPoints.csv") %>%
   select("count_point_id",  "LAT", "LONG")
 
 # load count data
 count_data <- load_data(
-  "Data/average_annual_daily_counts.csv"
+  "../data/average_annual_daily_counts.csv"
 ) %>%
   select("count_point_id", "year")
 
@@ -18,19 +18,17 @@ points_data <- points_data %>%
 
 # create df with 1 row for each location including min and max years
 points_data <- points_data %>%
-  group_by(count_point_id) %>%
-  mutate(
+  group_by(count_point_id, LAT, LONG) %>%
+  summarise(
     first_year = min(year, na.rm = TRUE),
     last_year = max(year, na.rm = TRUE)
-  ) %>%
-  select(-year) %>%
-  distinct()
+  )
 
 # create a new column where TRUE if min before 2020 and max after 2020
 points_data <- points_data %>%
   mutate(
     Useful = case_when(
-      first_year <= 2020 & last_year >= 2020 ~ TRUE,
+      first_year < 2020 & last_year > 2020 ~ TRUE,
       TRUE ~ FALSE
     )
   )
@@ -53,8 +51,8 @@ useful_points_map <- add_points(
   size = 0.06
 )
 
-save_map(useful_points_map, "Figures/useful_points_map.PNG")
-save_map(useful_points_map, "Figures/useful_points_map.html")
+save_map(useful_points_map, "../output/useful_points_map.PNG")
+save_map(useful_points_map, "../output/useful_points_map.html")
 
 
 # plot map with all points grouped by useful
@@ -62,9 +60,10 @@ points_map <- add_points(
   map,
   points_data,
   size = 0.06,
-  color = "Useful"
+  color = "Useful",
+  palette = "BuPu"
 )
 
-save_map(points_map, "Figures/grouped_points_map.PNG")
-save_map(points_map, "Figures/grouped_points_map.html")
+save_map(points_map, "../output/grouped_points_map.PNG")
+save_map(points_map, "../output/grouped_points_map.html")
 
