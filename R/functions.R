@@ -1,6 +1,7 @@
 # Download tube data
 source("R/config.R")
 library(dplyr)
+library(stringr)
 library(sf)
 
 # Convert British National Grid coordinates

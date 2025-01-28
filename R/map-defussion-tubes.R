@@ -1,7 +1,9 @@
 library(BSol.mapR)
 source("R/config.R")
 source("R/functions.R")
-dtube_data <- get_dtube_data() %>%
+dtube_data <- get_dtube_data(
+  redownload = T
+) %>%
   group_by(Tube_ID) %>%
   summarise(
     LONG = mean(LONG), 
