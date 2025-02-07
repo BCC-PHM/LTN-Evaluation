@@ -1,9 +1,18 @@
+WITH data_table AS (
+
 SELECT 
-       [AgeBands]
-      ,[ItemActualCost]
-      ,[ItemCount]
-      ,[PatientLSOA]
-	  ,[ProcessingPeriodDate]
+	CASE
+		WHEN [AgeBands] IN ('0-4', '5-9', '10-14','15-19') THEN '0-19'
+		WHEN [AgeBands] IN ('20-24','25-29','30-34','35-39','40-44','45-49','50-54','55-59','60-64') THEN '20-64'
+		WHEN [AgeBands] IN ('65-69','75-79','80-84','85-89','90-94','95-99','100-104','105-109','110-114','115-119','120-124') THEN '65+'
+ 	 	ELSE NULL
+	END AS [AgeGroup],
+    [ItemActualCost],
+    [ItemCount],
+    [PatientLSOA],
+	CAST(YEAR(DATEADD(MONTH, -3, [ProcessingPeriodDate])) AS VARCHAR) +
+		'/' + RIGHT(CAST(YEAR(DATEADD(MONTH, -3, [ProcessingPeriodDate])) +
+		1 AS VARCHAR), 2) AS FiscalYear
 
   FROM [EAT_Reporting_BSOL].[Other].[VwPCareMeds]
   WHERE PaidBNFCode IN ('0301011ABBBAAA0', '0302000C0AAAAAA', '0302000C0AAABAB', '0302000C0AAACAC', 
@@ -49,3 +58,16 @@ SELECT
   '0302000R0AAACAC', '0302000R0BBAAAA', '0302000R0BBACAC', '0302000U0AAAAAA', '0302000U0AAABAB', 
   '0302000U0BBAAAA', '0302000U0BBABAB', '0302000V0AAAAAA', '0302000V0AAABAB', '0302000V0BBAAAA', 
   '0302000V0BBABAB', '0302000V0BCAAA0')
+  )
+
+SELECT 
+	AgeGroup,
+	PatientLSOA,
+	FiscalYear,
+    SUM(ItemActualCost) AS Cost,
+    SUM(ItemCount) AS ItemCount
+  FROM data_table
+  GROUP BY
+	AgeGroup,
+	PatientLSOA,
+	FiscalYear
