@@ -10,13 +10,22 @@ LTN_LSOAs <- c("E01009186", "E01009184", "E01009187", "E01009186",
                "E01009176", "E01009175", "E01008981", "E01009179",
                "E01008932", "E01008933")
 
+harborne_LSOAs <- c("E01009252","E01009070","E01009065","E01008991",
+                    "E01008990","E01008992","E01009069","E01009067",
+                    "E01009072","E01009071","E01009075","E01009068",
+                    "E01033562")
 
 inhaler_data <- read_excel(
   "//svwvap1126.addm.ads.brm.pri/PHSensitive$/Intelligence/PHM/2025/LTN/Inhaler-prescriptions.xlsx",
   sheet = "Data"
   ) %>%
   mutate(
-    LTN = PatientLSOA %in% LTN_LSOAs
+    Area = 
+      case_when(
+        PatientLSOA %in% LTN_LSOAs ~ "Kings Heath",
+        PatientLSOA %in% harborne_LSOAs ~ "Harborne",
+        TRUE ~ "Other"
+      )
   )
 
 #############################################################
@@ -25,14 +34,14 @@ inhaler_data <- read_excel(
 
 inhaler_data %>%
   filter(
-    LTN,
+    Area != "Other",
     FiscalYear != "2024/25"
   ) %>%
   tidyr::separate(FiscalYear, into = c("YearStart", NA), sep = "/") %>%
   mutate(YearStart = as.numeric(YearStart)) %>%
-  group_by(YearStart, AgeGroup) %>%
+  group_by(YearStart, AgeGroup, Area) %>%
   summarise(ItemCount = sum(ItemCount)) %>%
-  ggplot(aes(x = YearStart,y = ItemCount, color = AgeGroup)) +
+  ggplot(aes(x = YearStart,y = ItemCount, color = Area)) +
   geom_line() +
   geom_point() +
   theme_bw() +
@@ -41,7 +50,8 @@ inhaler_data %>%
   ) +
   ylim(
     0, 4000
-  )
+  ) +
+  facet_wrap(~AgeGroup)
 
 ggsave("output/figures/LTN-inhaler-baseline.png")
 
